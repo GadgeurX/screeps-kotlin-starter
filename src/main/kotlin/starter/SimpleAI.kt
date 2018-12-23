@@ -2,23 +2,36 @@ package starter
 
 
 import types.base.delete
-import types.base.get
 import types.base.global.*
 import types.base.iterator
 import types.base.prototypes.Creep
-import types.base.prototypes.structures.SpawnOptions
-import types.base.prototypes.structures.StructureSpawn
 import types.base.toMap
 
-
-private val minPopulations = arrayOf(Role.HARVESTER to 2, Role.UPGRADER to 1, Role.BUILDER to 2)
-
 fun gameLoop() {
-    val mainSpawn: StructureSpawn = Game.spawns["Spawn1"]!!
-    val creeps = Game.creeps.toMap()
+    val creepsMap = Game.creeps.toMap()
+    houseKeeping(creepsMap)
+    val creeps = creepsMap.values
+    val rooms = Game.rooms.toMap().values
+
+    rooms.forEach {
+        it.update()
+    }
+
+    /*mainSpawn?.spawnCreep(
+            arrayOf(
+                    WORK,
+                    CARRY,
+                    MOVE,
+                    MOVE
+            ),
+            "HarvesterBig_${Game.time}",
+            CreepSpawnOptions(Role.HARVESTER)
+    )*/
+    /*val mainSpawn: StructureSpawn = Game.spawns["Spawn1"]!!
+
 
     //delete memories of creeps that have passed away
-    houseKeeping(creeps)
+
 
     //make sure we have at least some creeps
     spawnCreeps(minPopulations, creeps, mainSpawn)
@@ -49,11 +62,11 @@ fun gameLoop() {
             Role.UPGRADER -> creep.upgrade(mainSpawn.room.controller!!)
             else -> creep.pause()
         }
-    }
+    }*/
 
 }
 
-private fun spawnCreeps(
+/*private fun spawnCreeps(
         minPopulations: Array<Pair<Role, Int>>,
         creeps: Map<String, Creep>,
         spawn: StructureSpawn
@@ -73,19 +86,13 @@ private fun spawnCreeps(
 
         }
     }
-}
-
-private class CreepSpawnOptions(role: Role) : SpawnOptions {
-    override val memory = object : CreepMemory {
-        val role: String = role.name
-    }
-}
+}*/
 
 private fun houseKeeping(creeps: Map<String, Creep>) {
-    for ((creepName, _) in Memory.creeps) {
+    /*for ((creepName, _) in Memory.creeps) {
         if (creeps[creepName] == null) {
             console.log("deleting obselete memory entry for creep $creepName")
             delete(Memory.asDynamic().creeps[creepName])
         }
-    }
+    }*/
 }

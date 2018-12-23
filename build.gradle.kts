@@ -18,8 +18,8 @@ dependencies {
     compile("ch.delconte.screeps-kotlin:screeps-kotlin-types:0.9.10")
 }
 
-val screepsUser: String by project
-val screepsPassword: String by project
+val screepsUser: String = "GadgeurX"
+val screepsPassword: String = "iw98956263"
 val host: String? by project
 val branch: String? by project
 val defaultBranch = "kotlin-start"

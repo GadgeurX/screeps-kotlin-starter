@@ -1,6 +1,7 @@
 package starter
 
 import types.base.global.CreepMemory
+import types.base.global.RoomMemory
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
