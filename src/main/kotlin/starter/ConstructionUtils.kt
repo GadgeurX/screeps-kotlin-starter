@@ -4,7 +4,7 @@ import screeps.api.*
 
 object ConstructionUtils {
 
-    val containerList = mutableListOf<"String>()
+    val containerList = mutableListOf<String>()
 
     fun constructRoadArroundContainer(room: Room): Boolean {
         var construct = false
