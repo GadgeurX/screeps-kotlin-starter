@@ -1,10 +1,8 @@
 package starter
 
-import types.base.global.*
-import types.base.prototypes.Creep
-import types.base.prototypes.Room
-import types.base.prototypes.findEnergy
-import types.base.prototypes.structures.StructureSpawn
+import screeps.api.*
+import screeps.api.structures.StructureSpawn
+import screeps.utils.unsafe.jsObject
 import kotlin.js.Math
 
 
@@ -13,11 +11,12 @@ fun StructureSpawn.updateCreeps(room: Room, creeps: Array<Creep>) {
     for ((role, min) in Role.minPopulations) {
         if (role == Role.HARVESTER) {
             val roleCreeps = creeps.filter { creep ->
+                creep.my == true &&
                 creep.memory.role == role.name }
-            room.findEnergy().forEach {source ->
+            room.find(FIND_SOURCES).forEach { source ->
                 var count = 0
                 roleCreeps.forEach {
-                    if (it.memory.assignedEnergySource == source.id)
+                    if (it.memory?.assignedEnergySource == source.id)
                         count++
                 }
                 if (count < min) {
@@ -26,7 +25,7 @@ fun StructureSpawn.updateCreeps(room: Room, creeps: Array<Creep>) {
                 }
             }
         } else {
-            val roleCreeps = creeps.filter { creep -> creep.memory.role == role.name }
+            val roleCreeps = creeps.filter { creep -> creep.my == true && creep.memory.role == role.name }
             if (roleCreeps.size < min) {
                 spawnCreep(role)
                 return
@@ -38,12 +37,12 @@ fun StructureSpawn.updateCreeps(room: Room, creeps: Array<Creep>) {
 private fun StructureSpawn.spawnCreep(role: Role, spawnOption: CreepSpawnOptions = CreepSpawnOptions(role)) {
     val newName = "${role.name}_${Game.time}"
     val body = this.createCreepBody(role)
-    val code = this.spawnCreep(body, newName, spawnOption)
+    val code = this.spawnCreep(body, newName, options {memory = spawnOption.memory})
 
     when (code) {
         OK -> console.log("spawning $newName with body $body")
         ERR_BUSY, ERR_NOT_ENOUGH_ENERGY -> run { } // do nothing
-        else -> console.log("unhandled error code $code")
+        else -> {console.log("unhandled error code $code \n body : $body \n options: ${spawnOption.memory?.role}"); console.log(spawnOption.memory?.assignedEnergySource)}
     }
 }
 

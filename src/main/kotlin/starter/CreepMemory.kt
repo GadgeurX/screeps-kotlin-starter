@@ -1,11 +1,11 @@
 package starter
 
-import types.base.global.CreepMemory
-import types.extensions.memory.memoryOrDefault
+import screeps.api.CreepMemory
+import screeps.utils.memory.memory
 
-var CreepMemory.role: String by memoryOrDefault(Role.UNASSIGNED.name)
+var CreepMemory.role: String by memory{Role.UNASSIGNED.name}
 
-var CreepMemory.modeLowEnergy: Boolean by memoryOrDefault(false)
+var CreepMemory.modeLowEnergy: Boolean by memory { false }
 
 var CreepMemory.inTargetId: String?
     get() = this.asDynamic().inTargetId as? String

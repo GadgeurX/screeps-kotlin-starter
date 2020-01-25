@@ -1,32 +1,41 @@
 package starter
 
-import types.base.global.STRUCTURE_CONTAINER
-import types.base.global.STRUCTURE_EXTENSION
-import types.base.global.STRUCTURE_SPAWN
-import types.base.prototypes.*
-import types.base.prototypes.structures.StructureExtension
-import types.base.prototypes.structures.StructureSpawn
+import screeps.api.*
+import screeps.api.Room
+import screeps.api.STRUCTURE_CONTAINER
+import screeps.api.STRUCTURE_EXTENSION
+import screeps.api.STRUCTURE_SPAWN
+import screeps.api.structures.StructureExtension
+import screeps.api.structures.StructureSpawn
 
 fun Room.update() {
-    val creeps = this.findCreeps()
+
+    val creeps = this.find(FIND_CREEPS)
     val spawn = getSpawn()
 
     if (spawn?.my == true) {
         spawn.updateCreeps(this, creeps)
-        var construct: Boolean
-        construct = ConstructionUtils.constructExtension(this)
-        if (!hasEnoughContainer() && !construct) {
-            construct = ConstructionUtils.constructSpawnContainer(this)
+        var construct = false
+        if (!hasEnoughContainer()) {
+            construct = ConstructionUtils.constructSourceContainer(this)
             if (!construct)
-                construct = ConstructionUtils.constructSourceContainer(this)
+                construct = ConstructionUtils.constructSpawnContainer(this)
         }
+        if (!construct)
+            construct = ConstructionUtils.constructExtension(this)
+        if (!construct)
+            construct = ConstructionUtils.constructRoadArroundStruct(this)
+        if (!construct)
+            construct = ConstructionUtils.constructRoadArroundContainer(this)
     }
 
-    for (creep in creeps) {
+    for (creep in creeps.filter { creep ->
+        creep.my == true }) {
         when (creep.memory.role) {
             Role.HARVESTER.name -> creep.harvest()
             Role.BUILDER.name -> creep.build()
             Role.UPGRADER.name -> creep.upgrade()
+            Role.TRANSPORTER.name -> creep.transport()
         }
     }
 }
@@ -36,7 +45,7 @@ fun Room.isMyRoom(): Boolean? {
 }
 
 fun Room.getSpawn(): StructureSpawn? {
-    val spawns = this.findStructures()
+    val spawns = this.find(FIND_STRUCTURES)
             .filter { (it.structureType == STRUCTURE_SPAWN) }
 
     return if (spawns.isNotEmpty())
@@ -46,15 +55,15 @@ fun Room.getSpawn(): StructureSpawn? {
 }
 
 fun Room.getRoomExtension(): List<StructureExtension> {
-    return this.findStructures()
+    return this.find(FIND_STRUCTURES)
             .filter { (it.structureType == STRUCTURE_EXTENSION) }
             .map { it as StructureExtension }
 }
 
 fun Room.canConstructSite(): Boolean {
-    return this.findConstructionSites().isEmpty()
+    return this.find(FIND_CONSTRUCTION_SITES).isEmpty()
 }
 
 fun Room.hasEnoughContainer(): Boolean {
-    return this.findStructures().filter { it.structureType == STRUCTURE_CONTAINER }.size >= findEnergy().size + 1
+    return this.find(FIND_STRUCTURES).filter { it.structureType == STRUCTURE_CONTAINER }.size >= find(FIND_SOURCES).size + 1
 }

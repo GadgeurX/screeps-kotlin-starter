@@ -1,11 +1,8 @@
 package starter
 
-import types.base.global.FlagMemory
+import screeps.api.FlagMemory
+import screeps.utils.memory.memory
 
-var FlagMemory.containerPriority: Int?
-    get() = this.asDynamic().containerPriority as? Int
-    set(value) = run { this.asDynamic().containerPriority = value }
+var FlagMemory.containerPriority: Int by memory { 0 }
 
-var FlagMemory.containerTarget: String?
-    get() = this.asDynamic().containerTarget as? String
-    set(value) = run { this.asDynamic().containerTarget = value }
+var FlagMemory.containerTarget: String by memory { "" }

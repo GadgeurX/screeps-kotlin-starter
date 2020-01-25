@@ -1,11 +1,11 @@
 package starter
 
-import types.base.global.CreepMemory
-import types.base.prototypes.structures.SpawnOptions
+import screeps.api.CreepMemory
 
-class CreepSpawnOptions(role: Role, assignedEnergySource: String? = null) : SpawnOptions {
-    override val memory = object : CreepMemory {
-        val role: String = role.name
-        val assignedEnergySource: String? = assignedEnergySource
-    }
+class CreepSpawnOptions(private val role: Role, private val assignedEnergySource: String? = null) {
+    val memory: CreepMemory?
+        get() = object: CreepMemory{}.apply {
+            this.role = this@CreepSpawnOptions.role.name
+            this.assignedEnergySource = this@CreepSpawnOptions.assignedEnergySource
+        }
 }

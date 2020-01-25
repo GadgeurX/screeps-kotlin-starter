@@ -1,12 +1,11 @@
+import org._10ne.gradle.rest.RestTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsDce
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
-import org._10ne.gradle.rest.RestTask
-import java.io.File
 import java.util.*
 
 plugins {
-    id("kotlin2js") version "1.2.70"
-    id("kotlin-dce-js") version "1.2.70"
+    id("kotlin2js") version "1.3.31"
+    id("kotlin-dce-js") version "1.3.31"
     id("org.tenne.rest") version "0.4.2"
 }
 
@@ -15,22 +14,27 @@ repositories {
 }
 
 dependencies {
-    compile("ch.delconte.screeps-kotlin:screeps-kotlin-types:0.9.10")
+    implementation("ch.delconte.screeps-kotlin:screeps-kotlin-types:1.3.0")
+    implementation(kotlin("stdlib-js"))
+    testImplementation(kotlin("test-js"))
 }
 
-val screepsUser: String = "GadgeurX"
-val screepsPassword: String = "iw98956263"
-val host: String? by project
-val branch: String? by project
-val defaultBranch = "kotlin-start"
-val defaultHost = "https://screeps.com"
+val screepsUser: String? by project
+val screepsPassword: String? by project
+val screepsToken: String? by project
+val screepsHost: String? by project
+val screepsBranch: String? by project
+val branch = screepsBranch ?: "kotlin-start"
+val host = screepsHost ?: "https://screeps.com"
+val user = screepsUser ?: "GadgeurX"
+val password = screepsPassword ?: "iw98956263"
 
 fun String.encodeBase64() = Base64.getEncoder().encodeToString(this.toByteArray())
 
 tasks {
     "compileKotlin2Js"(Kotlin2JsCompile::class) {
         kotlinOptions {
-            moduleKind = "umd"
+            moduleKind = "commonjs"
             outputFile = "${buildDir}/screeps/main.js"
             sourceMap = true
             metaInfo = true
@@ -42,23 +46,34 @@ tasks {
         dceOptions.devMode = false
     }
 
-    register("deploy", RestTask::class) {
+    register<RestTask>("deploy") {
         group = "screeps"
         dependsOn("build")
         val modules = mutableMapOf<String, String>()
+        val minifiedCodeLocation = File("$buildDir/kotlin-js-min/main")
 
         httpMethod = "post"
-        uri = "${host ?: defaultHost}/api/user/code"
-        requestHeaders = mapOf("Authorization" to "Basic " + "$screepsUser:$screepsPassword".encodeBase64())
+        uri = "$host/api/user/code"
+        requestHeaders = if (screepsToken != null)
+            mapOf("X-Token" to screepsToken)
+        else
+            mapOf("Authorization" to "Basic " + "$user:$password".encodeBase64())
         contentType = groovyx.net.http.ContentType.JSON
         requestBody = mapOf("branch" to branch, "modules" to modules)
 
         doFirst {
-            modules.putAll(File("$buildDir/kotlin-js-min/main")
-                .listFiles { _, name -> name.endsWith(".js") }
-                .associate { it.nameWithoutExtension to it.readText() })
+            if (user == null && password == null && screepsToken == null) {
+                throw InvalidUserDataException("you need to supply either screepsUser and screepsPassword or screepsToken before you can upload code")
+            }
+            if (!minifiedCodeLocation.isDirectory) {
+                throw InvalidUserDataException("found no code to upload at ${minifiedCodeLocation.path}")
+            }
 
+            val jsFiles = minifiedCodeLocation.listFiles { _, name -> name.endsWith(".js") }
+            modules.putAll(jsFiles.associate { it.nameWithoutExtension to it.readText() })
+
+            println("uploading ${jsFiles.count()} files to branch $branch on server $host")
         }
+
     }
 }
-
