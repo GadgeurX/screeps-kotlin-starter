@@ -7,5 +7,6 @@ data class RoomData (
     val nbSources: Int = 0,
     val ownerPlayerId: String? = null,
     val nbCreeps: Int = 0,
-    val resource: List<MineralConstant> = listOf()
+    val resource: List<MineralConstant> = listOf(),
+    val roomId: String = ""
 )

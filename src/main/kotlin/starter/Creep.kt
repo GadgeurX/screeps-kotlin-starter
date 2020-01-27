@@ -14,9 +14,10 @@ fun Creep.upgrade() {
         findEnergyForWork()
     } else {
         this.memory.inTargetId = null
-        if (upgradeController(this.room.controller!!) == ERR_NOT_IN_RANGE) {
+        if (this.pos.isNearTo(room.controller!!))
+            upgradeController(this.room.controller!!)
+        else
             moveTo(this.room.controller!!.pos)
-        }
     }
 }
 
@@ -44,14 +45,16 @@ fun Creep.build() {
                 if (repareTarget != null) {
                     if (repareTarget.hits == repareTarget.hitsMax)
                         this.memory.outTargetId = null
-                    if (repair(repareTarget) == ERR_NOT_IN_RANGE) {
+                    if (this.pos.isNearTo(repareTarget))
+                        repair(repareTarget)
+                    else
                         moveTo(repareTarget.pos)
-                    }
                 }
                 if (buildTarget != null) {
-                    if (build(buildTarget) == ERR_NOT_IN_RANGE) {
+                    if (this.pos.isNearTo(buildTarget))
+                        build(buildTarget)
+                    else
                         moveTo(buildTarget.pos)
-                    }
                 }
             }
         }
@@ -93,34 +96,35 @@ fun Creep.harvest() {
     }
 }
 
-fun getSide(pos: RoomPosition): Vector {
+fun getSide(pos: RoomPosition): Pair<Int, Int> {
     if (pos.x <= 0)
-        return Vector(1, 0)
+        return Pair(1, 0)
     if (pos.x >= 49)
-        return Vector(-1, 0)
+        return Pair(-1, 0)
     if (pos.y <= 0)
-        return Vector(0, 1)
+        return Pair(0, 1)
     if (pos.y >= 49)
-        return Vector(0, -1)
-    return Vector(0, 0)
+        return Pair(0, -1)
+    return Pair(0, 0)
 }
 
 fun Creep.scoot() {
     if (this.memory.currentRoomName != room.name) {
         val exits = room.find(FIND_EXIT);
         val exit = exits[Random.nextInt().absoluteValue % exits.size]
-        this.memory.targetPosition = Vector(exit)
+        this.memory.targetPosition = Pair(exit.x, exit.y)
         this.memory.currentRoomName = room.name
-        this.memory.worldPosition = this.memory.worldPosition + getSide(this.pos)
+        this.memory.worldPosition = Pair(this.memory.worldPosition.first + getSide(this.pos).first, this.memory.worldPosition.second + getSide(this.pos).second)
         Memory.map[this.memory.worldPosition] = RoomData(
                 room.controller?.level,
                 room.find(FIND_SOURCES).size,
                 room.controller?.owner?.username,
                 room.find(FIND_HOSTILE_CREEPS).size,
-                room.find(FIND_MINERALS).map { it.mineralType }
+                room.find(FIND_MINERALS).map { it.mineralType },
+                room.name
         )
     }
-    this.moveTo(this.memory.targetPosition.x, this.memory.targetPosition.y)
+    this.moveTo(this.memory.targetPosition.first, this.memory.targetPosition.second)
 }
 
 fun Creep.findEnergyForWork() {
