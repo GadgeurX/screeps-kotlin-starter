@@ -4,6 +4,9 @@ import screeps.api.*
 import screeps.api.structures.Structure
 import screeps.api.structures.StructureContainer
 import screeps.api.structures.StructureExtension
+import screeps.api.structures.StructureTower
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 
 fun Creep.upgrade() {
@@ -24,9 +27,9 @@ fun Creep.build() {
         this.memory.inTargetId = null
 
         if (this.memory.outTargetId == null) {
-            val repareTarget = room.find(FIND_STRUCTURES).filter { it.hits < it.hitsMax - (it.hitsMax / 10) && it.structureType != STRUCTURE_WALL }
-            if (repareTarget.isNotEmpty())
-                this.memory.outTargetId = repareTarget[0].id
+            val repairTarget = room.find(FIND_STRUCTURES).filter { it.hits < it.hitsMax - (it.hitsMax / 10) && it.structureType != STRUCTURE_WALL }
+            if (repairTarget.isNotEmpty())
+                this.memory.outTargetId = repairTarget[0].id
             if (this.memory.outTargetId == null) {
                 val buildTargets = room.find(FIND_CONSTRUCTION_SITES)
                 if (buildTargets.isNotEmpty())
@@ -89,6 +92,15 @@ fun Creep.harvest() {
         }
     }
 }
+fun Creep.scoot() {
+    if (this.memory.currentRoomName != room.name) {
+        val exits = room.find(FIND_EXIT);
+        val exit = exits[Random.nextInt().absoluteValue % exits.size]
+        this.memory.targetPosition = Pair(exit.x, exit.y)
+        this.memory.currentRoomName = room.name
+    }
+    this.moveTo(RoomPosition(this.memory.targetPosition.first, this.memory.targetPosition.second, room.name))
+}
 
 fun Creep.findEnergyForWork() {
     if (this.memory.inTargetId == null) {
@@ -142,9 +154,7 @@ fun Creep.findEnergyForTansport() {
             }
             return
         }
-        memory.modeLowEnergy = true
-        if (carry.energy == carryCapacity)
-            memory.modeLowEnergy = false
+        memory.modeLowEnergy = carry.energy != carryCapacity
         val sources = room.find(FIND_SOURCES)
         if (sources.isNotEmpty())
             if (harvest(sources[0]) == ERR_NOT_IN_RANGE) {
@@ -161,6 +171,10 @@ fun Creep.findStructureForTansport() {
         else {
             this.room.find(FIND_STRUCTURES).filter { it.structureType == STRUCTURE_EXTENSION }.map { it as StructureExtension }.forEach {
                 if (this.memory.outTargetId == null && it.energy < it.energyCapacity)
+                    this.memory.outTargetId = it.id
+            }
+            this.room.find(FIND_STRUCTURES).filter { it.structureType == STRUCTURE_TOWER }.map {it as StructureTower }.forEach {
+                if (this.memory.outTargetId == null && it.energy < it.energyCapacity / 2)
                     this.memory.outTargetId = it.id
             }
             if (this.memory.outTargetId == null)

@@ -7,6 +7,7 @@ import screeps.api.STRUCTURE_EXTENSION
 import screeps.api.STRUCTURE_SPAWN
 import screeps.api.structures.StructureExtension
 import screeps.api.structures.StructureSpawn
+import screeps.api.structures.StructureTower
 
 fun Room.update() {
 
@@ -22,6 +23,8 @@ fun Room.update() {
                 construct = ConstructionUtils.constructSpawnContainer(this)
         }
         if (!construct)
+            construct = ConstructionUtils.constructTower(this)
+        if (!construct)
             construct = ConstructionUtils.constructExtension(this)
         if (!construct)
             construct = ConstructionUtils.constructRoadArroundStruct(this)
@@ -36,8 +39,10 @@ fun Room.update() {
             Role.BUILDER.name -> creep.build()
             Role.UPGRADER.name -> creep.upgrade()
             Role.TRANSPORTER.name -> creep.transport()
+            Role.SCOOT.name -> creep.scoot()
         }
     }
+    this.find(FIND_STRUCTURES).filter { it.structureType == STRUCTURE_TOWER }.map { it as StructureTower }.forEach { it.Update(this) }
 }
 
 fun Room.isMyRoom(): Boolean? {

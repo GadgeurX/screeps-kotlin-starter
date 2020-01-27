@@ -75,8 +75,7 @@ object ConstructionUtils {
     }
 
     fun constructSourceContainer(room: Room): Boolean {
-        if (room.isMyRoom() == true &&
-                room.canConstructSite()) {
+        if (room.isMyRoom() == true && room.canConstructSite()) {
             console.log("Can construct")
             room.find(FIND_SOURCES).forEach { source ->
                 var hasContainer = false
@@ -130,6 +129,16 @@ object ConstructionUtils {
         return false
     }
 
+    fun constructTower(room: Room): Boolean {
+        if (room.isMyRoom() == true && room.canConstructSite()) {
+            console.log("Can construct Tower")
+            val sitePos = findConstructionPlace(room, room.getSpawn()?.pos ?: return false)
+            if (room.createConstructionSite(sitePos ?: return false, STRUCTURE_TOWER) == OK)
+                return true
+        }
+        return false
+    }
+
     private fun findConstructionPlace(room: Room, pos: RoomPosition?): RoomPosition? {
         if (pos == null)
             return null
@@ -176,9 +185,6 @@ object ConstructionUtils {
 
     private fun isEmptyCase(room: Room, x: Int, y: Int): Boolean {
         room.lookAt(x, y).forEach {
-            console.log("terrain = " + it.terrain)
-            console.log("cSite = " + it.constructionSite)
-            console.log("struct = " + it.structure)
             if (it.terrain == TERRAIN_WALL || it.constructionSite != null || (it.structure != null && it.structure?.structureType != STRUCTURE_ROAD))
                 return false
         }
@@ -187,9 +193,6 @@ object ConstructionUtils {
 
     private fun isEmptyCaseRoad(room: Room, x: Int, y: Int): Boolean {
         room.lookAt(x, y).forEach {
-            console.log("terrain = " + it.terrain)
-            console.log("cSite = " + it.constructionSite)
-            console.log("struct = " + it.structure)
             if (it.terrain == TERRAIN_WALL || it.constructionSite != null || it.structure != null)
                 return false
         }
