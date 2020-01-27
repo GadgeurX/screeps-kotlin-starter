@@ -21,5 +21,6 @@ var CreepMemory.assignedEnergySource: String?
     get() = this.asDynamic().assignedEnergySource as? String
     set(value) = run { this.asDynamic().assignedEnergySource = value }
 
-var CreepMemory.targetPosition: Pair<Int, Int> by memory { Pair(-1, -1) }
+var CreepMemory.targetPosition: Vector by memory { Vector() }
 var CreepMemory.currentRoomName: String by memory { "" }
+var CreepMemory.worldPosition: Vector by memory { Vector() }
