@@ -16,7 +16,7 @@ fun StructureSpawn.updateCreeps(room: Room, creeps: Array<Creep>) {
             room.find(FIND_SOURCES).forEach { source ->
                 var count = 0
                 roleCreeps.forEach {
-                    if (it.memory?.assignedEnergySource == source.id)
+                    if (it.memory.assignedEnergySource == source.id)
                         count++
                 }
                 if (count < min) {
@@ -36,7 +36,9 @@ fun StructureSpawn.updateCreeps(room: Room, creeps: Array<Creep>) {
         else if (role == Role.SCOOT) {
             val roleCreeps = Game.creeps.values.filter { creep -> creep.my && creep.memory.role == role.name }
             if (roleCreeps.size < min) {
-                spawnCreep(role, CreepSpawnOptions(role, worldPosition = Memory.map.entries.filter { it.component2().roomId == room.name }.map { it.component1() }[0]))
+                val rooms = Memory.map.entries.filter { it.component2().roomId == room.name }.map { it.component1() }
+                if (rooms.isNotEmpty())
+                    spawnCreep(role, CreepSpawnOptions(role, worldPosition = rooms[0]))
                 return
             }
         }

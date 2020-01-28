@@ -5,6 +5,8 @@ import screeps.utils.contains
 import screeps.utils.containsKey
 import screeps.utils.toMap
 import screeps.utils.unsafe.delete
+import starter.state.InitState
+import starter.state.StateMachine
 
 fun gameLoop() {
 
@@ -27,6 +29,8 @@ fun gameLoop() {
     rooms.forEach {
         it.update()
     }
+
+    StateMachine(InitState()).update()
 }
 
 private fun houseKeeping(creeps: Map<String, Creep>) {

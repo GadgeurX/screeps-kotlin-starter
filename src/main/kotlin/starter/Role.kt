@@ -13,7 +13,7 @@ enum class Role {
     UPGRADER;
 
     companion object {
-        val minPopulations = mapOf(Role.HARVESTER to 2, Role.UPGRADER to 2, Role.BUILDER to 2, Role.TRANSPORTER to 2, SCOOT to 1)
+        val minPopulations = mapOf(Role.HARVESTER to 1, Role.UPGRADER to 3, Role.BUILDER to 2, Role.TRANSPORTER to 2, SCOOT to 1)
 
         val partRatio = mapOf(Role.HARVESTER to mapOf(MOVE to 0.5, WORK to 0.75, CARRY to 1.0),
                 Role.BUILDER to mapOf(MOVE to 0.5, WORK to 0.75, CARRY to 1.0),
